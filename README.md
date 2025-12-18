@@ -1,7 +1,7 @@
 # claustra01's CTF challenges
 
 ## sknbCTF 2025
-- [CTFtime](https://ctftime.org/team/355880/)
+- [CTFtime](https://ctftime.org/event/2947)
 
 |Challenge|Category|Difficulty|Solved|Keywords|Writeup|
 |---|---|---|---|---|---|
