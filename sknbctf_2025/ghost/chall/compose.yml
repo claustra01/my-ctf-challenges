@@ -1,0 +1,18 @@
+services:
+  app:
+    build: ./app
+    expose:
+      - "8080"
+    environment:
+      - FLAG=sknb{wh3r3_4m_1_wh1sp3r_wh1sp3r_wh1sp3r}
+    restart: unless-stopped
+  
+  proxy:
+    image: nginx:1.17.10
+    ports:
+      - "8080:80"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    depends_on:
+      - app

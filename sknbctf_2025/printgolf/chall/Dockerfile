@@ -1,0 +1,13 @@
+FROM python:3.13.2-alpine@sha256:323a717dc4a010fee21e3f1aac738ee10bb485de4e7593ce242b36ee48d6b352 as app
+
+FROM pwn.red/jail
+COPY --from=app / /srv
+
+RUN mkdir /srv/app
+
+COPY chall.py /srv/app/run
+
+RUN chmod 555 /srv/app/run
+
+ENV JAIL_MEM=20M JAIL_TIME=300 JAIL_PORT=12343
+EXPOSE 12343
