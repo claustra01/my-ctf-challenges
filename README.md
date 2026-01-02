@@ -5,5 +5,5 @@
 
 |Challenge|Category|Difficulty|Solved|Keywords|Writeup|
 |---|---|---|---|---|---|
-|[ghost](/sknbctf_2025/ghost/)|Web|Medium-Hard|N/A|HTTP Request Smuggling|[EN](https://zenn.dev/claustra01/articles/699267314c9d0d#%5Bweb%5D-ghost)/[JP](https://qiita.com/claustra01/items/a89db5ca2186eb6ae9c2)|
-|[printgolf](/sknbctf_2025/printgolf/)|Misc|Medium|N/A|Python, Unicord|[EN](https://zenn.dev/claustra01/articles/699267314c9d0d#%5Bmisc%5D-printgolf)/[JP](https://qiita.com/claustra01/items/522f136ff8856274ea0c)|
+|[ghost](/sknbctf_2025/ghost/)|Web|Medium-Hard|N/A|HTTP Request Smuggling|[EN](https://writeups.claustra01.net/sknbctf-2025/)/[JP](https://qiita.com/claustra01/items/a89db5ca2186eb6ae9c2)|
+|[printgolf](/sknbctf_2025/printgolf/)|Misc|Medium|N/A|Python, Unicord|[EN](https://writeups.claustra01.net/sknbctf-2025/)/[JP](https://qiita.com/claustra01/items/522f136ff8856274ea0c)|
