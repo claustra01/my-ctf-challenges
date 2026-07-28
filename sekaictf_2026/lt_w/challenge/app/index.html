@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>&amp;lt;\w+</title>
+</head>
+
+<body>
+<main>
+    <h1>XSS Challenge!</h1>
+    <form action="/create" method="post">
+        <label for="message">New Note:</label><br>
+        <textarea id="message" name="message" rows="4" required></textarea>    
+        <button type="submit">Submit</button>
+    </form>
+</main>
+</body>
+</html>

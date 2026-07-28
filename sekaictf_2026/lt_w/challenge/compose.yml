@@ -1,0 +1,13 @@
+services:
+  app:
+    build: ./app
+    ports:
+      - "8080:8081"
+    restart: unless-stopped
+
+  proxy:
+    build: ./proxy
+    network_mode: "service:app"
+    restart: unless-stopped
+    depends_on:
+      - app

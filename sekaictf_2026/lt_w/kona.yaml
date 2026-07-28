@@ -1,0 +1,173 @@
+# Reference: https://github.com/project-sekai-ctf/konata
+challenges:
+  - category: web
+    name: '&lt;\w+'
+    author: claustra01
+    description: |
+      HTML unescape + Regex to delete all = What can I do?
+
+      > [!NOTE]
+      > This challenge does not have access to internet, use `console.log` to exfil :)
+    tags:
+      - ⭐⭐
+    attachments:
+      files:
+        - "challenge/"
+      stripComponents: 1
+    flags:
+      rctf: SEKAI{l0g1c_l1v3s_1n_c0d3..._vuln_l1v3s_1n_t1m3!}
+    endpoints:
+      - type: https
+        endpoint: "ltw.{{ config.domains['static'] }}"
+    adminBot:
+      code: |
+        import { sleep } from 'bun'
+        import { Challenge, type ChallengeContext } from '../src/types'
+
+        const APP_HOST = '{{"ltw." + config.domains['static']}}'
+        const APP_URL = `https://${APP_HOST}`
+
+        export const challenge = new Challenge({
+          timeoutMilliseconds: 30_000,
+
+          inputs: {
+            id: {
+              pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+            },
+          },
+
+          handler: async (ctx: ChallengeContext): Promise<void> => {
+            const url = `${APP_URL}/notes/${ctx.input.id!}`
+            ctx.output.info('challenge', `visiting note`, { url })
+
+            await ctx.browserContext.setCookie({
+              name: 'FLAG',
+              value: ctx.job.flag,
+              domain: APP_HOST,
+              path: '/',
+            })
+
+            const page = await ctx.browserContext.newPage()
+
+            try {
+              await page.goto(url)
+            } catch (e) {
+              ctx.output.fatal('challenge', `failed to visit provided URL: ${e}`, { url })
+              return
+            }
+
+            await sleep(5_000)
+            await page.close()
+          },
+
+          hooksConfig: {
+            showConsoleLogs: true,
+            showBrowserErrors: true,
+            showNavigation: true,
+            showDialogs: true,
+            autoDismissDialogs: true,
+            limitTabsNumber: -1,
+            limitTabsNumberShowError: true,
+          },
+
+          browser: 'chrome',
+
+          restrictDomains: {
+            host: {
+              allowRegex: [{ pattern: '^{{("ltw." + config.domains['static']) | re_escape}}$' }],
+              disallowRegex: [{ pattern: '.*' }],
+            },
+          },
+        })
+
+deployment:
+  images:
+    - path: challenge/app
+      name: ltw-app
+      tag: latest
+      registryName: challenges
+      platform: linux/amd64
+    - path: challenge/proxy
+      name: ltw-proxy
+      tag: latest
+      registryName: challenges
+      platform: linux/amd64
+
+  kubernetesInlineManifests:
+    - clusterName: main
+      documents:
+        - apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: 'ltw'
+        - apiVersion: sctf.es3n1n.io/v1alpha1
+          kind: Challenge
+          metadata:
+            name: "ltw"
+            namespace: "ltw"
+          spec:
+            releaseTime: "2026-06-27T08:00:00Z"
+            pods:
+              - name: challenge
+                # must stay at 1 replicas
+                replicas: 1
+                spec:
+                  containers:
+                    - name: app
+                      image: "{{ images['ltw-app'] }}"
+                      ports:
+                        - containerPort: 8080
+                      resources:
+                        requests: { cpu: 25m, memory: 64Mi }
+                        limits: { cpu: 2, memory: 512Mi }
+                      volumeMounts:
+                        - name: notes
+                          mountPath: /app/notes
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop: ["ALL"]
+                    - name: proxy
+                      image: "{{ images['ltw-proxy'] }}"
+                      ports:
+                        - containerPort: 8081
+                      resources:
+                        requests: { cpu: 10m, memory: 16Mi }
+                        limits: { cpu: 500m, memory: 128Mi }
+                      securityContext:
+                        runAsNonRoot: true
+                        runAsUser: 101
+                        runAsGroup: 101
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop: ["ALL"]
+                    - name: notes-sweeper
+                      image: busybox:1.37
+                      command:
+                        - /bin/sh
+                        - -c
+                        - 'while true; do find /app/notes -type f -mmin +60 -delete 2>/dev/null; sleep 300; done'
+                      resources:
+                        requests: { cpu: 1m, memory: 8Mi }
+                        limits: { cpu: 50m, memory: 32Mi }
+                      volumeMounts:
+                        - name: notes
+                          mountPath: /app/notes
+                      securityContext:
+                        runAsNonRoot: true
+                        runAsUser: 65532
+                        allowPrivilegeEscalation: false
+                        readOnlyRootFilesystem: true
+                        capabilities:
+                          drop: ["ALL"]
+                  securityContext:
+                    fsGroup: 65532
+                  volumes:
+                    - name: notes
+                      emptyDir:
+                        sizeLimit: 1Gi
+                exposed:
+                  - protocol: HTTPS
+                    subdomain: ltw
+                    port: 1337
+                    targetPort: 8081
